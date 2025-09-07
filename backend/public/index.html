@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Product Compliance Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="p-4">
+  <h1 class="mb-4">Product Compliance Dashboard</h1>
+
+  <div class="mb-3">
+    <label for="category">Category:</label>
+    <input type="text" id="category" value="soaps">
+    <button onclick="fetchProducts()" class="btn btn-primary btn-sm">Fetch Products</button>
+  </div>
+
+  <table class="table table-bordered table-striped" id="productTable">
+    <thead>
+      <tr>
+        <th>Product Name</th>
+        <th>Brand</th>
+        <th>Manufacturer</th>
+        <th>Net Qty</th>
+        <th>MRP</th>
+        <th>Date of Manufacture</th>
+        <th>Expiry</th>
+        <th>Country</th>
+        <th>Consumer Care</th>
+        <th>Legally Compliant</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+<script>
+async function fetchProducts() {
+  const category = document.getElementById("category").value;
+
+  try {
+    const res = await fetch(`/api/products?category=${category}&limit=10`);
+    const data = await res.json();
+
+    const tbody = document.querySelector("#productTable tbody");
+    tbody.innerHTML = "";
+
+    data.forEach(p => {
+      const row = document.createElement("tr");
+      const fields = ["product_name","brand","manufacturer","net_quantity","mrp","date_of_manufacture","expiration_date","country_of_origin","consumer_care"];
+
+      // Fill product fields with green/red depending on presence
+      fields.forEach(f => {
+        const td = document.createElement("td");
+        td.textContent = p[f];
+        td.style.color = p.compliance[f] ? "green" : "red"; 
+        row.appendChild(td);
+      });
+
+      // Add Legally Compliant column
+      const tdCompliant = document.createElement("td");
+      tdCompliant.textContent = p.legally_compliant ? "Yes" : "No";
+      tdCompliant.style.color = p.legally_compliant ? "green" : "red";
+      tdCompliant.style.fontWeight = "bold";
+      row.appendChild(tdCompliant);
+
+      tbody.appendChild(row);
+    });
+  } catch (err) {
+    console.error("Error fetching products:", err);
+    alert("Failed to fetch products. Check console.");
+  }
+}
+
+// Fetch default category on page load
+window.onload = fetchProducts;
+</script>
+</body>
+</html>
